@@ -1,20 +1,18 @@
-import Fastify from 'fastify';
+import fastify from 'fastify';
 import fuelPriceRoutes from './routes/fuelPriceRoutes';
-import cors from '@fastify/cors';
+import gasStationRoutes from './routes/gasStationRoutes';
+import userRoutes from './routes/userRoutes';
 
+const app = fastify();
 
-const fastify = Fastify({ logger: true });
+app.register(fuelPriceRoutes); // Registra as rotas
+app.register(userRoutes); // Registra as rotas
+app.register(gasStationRoutes); // Registra as rotas
 
-fastify.register(cors, {
-  origin: true
-})
-
-fastify.register(fuelPriceRoutes, { prefix: '/prices' });
-
-fastify.listen({ port: 3000 }, (err, address) => {
+app.listen({ port: 3000 }, (err) => {
   if (err) {
-    fastify.log.error(err);
+    console.log(err);
     process.exit(1);
   }
-  fastify.log.info(`Server listening at ${address}`);
+  console.log(`Server running at http://localhost:3000`);
 });
