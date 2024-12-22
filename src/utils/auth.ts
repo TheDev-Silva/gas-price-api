@@ -17,7 +17,9 @@ export const authMiddleware = async (
     try {
         const decoded = jwt.verify(token, JWT_SECRET) as { id: number; email: string };
         request.user = decoded; // Adiciona os dados do usuário à requisição
+        console.log('Usuário autenticado:', decoded); // Log para depuração
     } catch (error) {
         return reply.code(401).send({ error: 'Invalid or expired token' });
     }
 };
+

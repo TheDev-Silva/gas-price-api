@@ -14,33 +14,46 @@ datasource db {
 }
 
 model User {
-  id        Int         @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   name      String
-  email     String      @unique
+  email     String    @unique
   password  String
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  createdAt DateTime  @default(now()) // Certifique-se de que este campo está definido
+  updatedAt DateTime  @default(now())
   FuelPrice FuelPrice[]
+  FuelType FuelType[]
 }
+
 
 model GasStation {
   id        Int         @id @default(autoincrement())
   name      String
-  latitude  Float
-  longitude Float
   address   String
   createdAt DateTime    @default(now())
   FuelPrice FuelPrice[]
+
+  @@unique([name, address]) // Garante unicidade para nome + endereço
 }
 
 model FuelPrice {
-  id           Int      @id @default(autoincrement())
-  gasStationId Int
-  userId       Int
-  fuelType     String
+  id           Int        @id @default(autoincrement())
   price        Float
-  createdAt    DateTime @default(now())
+  gasStationId Int // Relacionamento com GasStation
+  gasStation   GasStation @relation(fields: [gasStationId], references: [id])
+  fuelTypeId   Int // Relacionamento com FuelType
+  fuelType     FuelType   @relation(fields: [fuelTypeId], references: [id])
+  userId       Int // Usuário que registrou
+  user         User       @relation(fields: [userId], references: [id])
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
 
-  gasStation GasStation @relation(fields: [gasStationId], references: [id])
-  user       User       @relation(fields: [userId], references: [id])
+model FuelType {
+  id        Int         @id @default(autoincrement())
+  name      String      @unique
+  createdBy Int
+  user      User        @relation(fields: [createdBy], references: [id])
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  FuelPrice FuelPrice[]
 }

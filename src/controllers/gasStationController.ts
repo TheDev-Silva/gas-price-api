@@ -3,8 +3,6 @@ import prisma from '../models/prismaClient';
 
 interface GasStationBody {
   name: string;
-  latitude: number;
-  longitude: number;
   address: string;
 }
 
@@ -12,11 +10,11 @@ export const addGasStation = async (
   request: FastifyRequest<{ Body: GasStationBody }>,
   reply: FastifyReply
 ) => {
-  const { name, latitude, longitude, address } = request.body;
+  const { name, address } = request.body;
 
   try {
     const gasStation = await prisma.gasStation.create({
-      data: { name, latitude, longitude, address },
+      data: { name, address },
     });
 
     reply.code(201).send(gasStation);

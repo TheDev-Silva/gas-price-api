@@ -9,7 +9,7 @@ app.register(fuelPriceRoutes); // Registra as rotas
 app.register(userRoutes); // Registra as rotas
 app.register(gasStationRoutes); // Registra as rotas
 
-app.listen({ port: 3000 }, (err) => {
+app.listen({ port: 3000, host: '0.0.0.0' }, (err) => {
   if (err) {
     console.log(err);
     process.exit(1);

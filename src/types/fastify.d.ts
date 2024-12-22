@@ -1,4 +1,5 @@
 import 'fastify';
+import prisma from '../models/prismaClient';
 
 declare module 'fastify' {
   interface FastifyRequest {
@@ -8,4 +9,11 @@ declare module 'fastify' {
     };
   }
 }
+
+const allFuelPrices = await prisma.fuelPrice.findMany({
+  include: {
+    user: true,
+    gasStation: true
+  }
+})
 
