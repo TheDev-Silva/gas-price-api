@@ -90,7 +90,7 @@ export const getRegisterUser = async (
             id: userId,
          },
          include: {
-            FuelPrice: true, // Inclui os preços de combustível associados ao usuário
+            fuelPrices: true, // Use o nome correto do relacionamento conforme definido no schema do Prisma
          },
       });
 
@@ -103,3 +103,56 @@ export const getRegisterUser = async (
       reply.code(500).send({ error: 'Erro ao buscar dados do usuário' });
    }
 };
+
+
+export const deleteUser = async (
+   request: FastifyRequest,
+   reply: FastifyReply
+) => {
+   try {
+      const token = request.headers.authorization?.split(' ')[1];
+      if (!token) {
+         return reply.status(401).send({ error: 'Token de autenticação não encontrado.' });
+      }
+
+      if (!Token) {
+         return reply.status(500).send({ error: 'Token de autenticação não configurado.' });
+      }
+
+      const decoded = jwt.verify(token, Token) as { id: number } | null;
+      if (!decoded || !decoded.id) {
+         return reply.status(401).send({ error: 'Token inválido ou usuário não autenticado.' });
+      }
+
+      const userId = decoded.id;
+
+      // Verifica se o usuário existe
+      const user = await prisma.user.findUnique({
+         where: { id: userId },
+      });
+
+      if (!user) {
+         return reply.status(404).send({ error: 'Usuário não encontrado.' });
+      }
+
+      // Exclusão de preços de combustível relacionados
+      await prisma.fuelPrice.deleteMany({
+         where: { userId },
+      });
+
+      // Exclusão de outros dados relacionados (adicionar mais exclusões conforme necessário)
+      // Exemplo para `GasStation`, se relacionado diretamente ao usuário:
+      //await prisma.gasStation.deleteMany({ where: { id: userId } });
+
+      // Exclusão do próprio usuário
+      await prisma.user.delete({
+         where: { id: userId },
+      });
+
+      return reply.status(200).send({ message: 'Usuário e dados relacionados excluídos com sucesso.' });
+   } catch (error) {
+      console.error('Erro ao deletar usuário:', error);
+      reply.status(500).send({ error: 'Erro ao deletar o usuário.' });
+   }
+};
+

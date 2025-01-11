@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,16 +11,14 @@ datasource db {
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
+  id        Int         @id @default(autoincrement())
   name      String
-  email     String    @unique
+  email     String      @unique
   password  String
-  createdAt DateTime  @default(now()) // Certifique-se de que este campo está definido
-  updatedAt DateTime  @default(now())
-  FuelPrice FuelPrice[]
-  FuelType FuelType[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @default(now())
+  fuelPrices FuelPrice[] 
 }
-
 
 model GasStation {
   id        Int         @id @default(autoincrement())
@@ -37,23 +32,12 @@ model GasStation {
 
 model FuelPrice {
   id           Int        @id @default(autoincrement())
+  gasStationId Int
+  userId       Int
+  address      String
+  fuelType     String // Agora é uma string
   price        Float
-  gasStationId Int // Relacionamento com GasStation
-  gasStation   GasStation @relation(fields: [gasStationId], references: [id])
-  fuelTypeId   Int // Relacionamento com FuelType
-  fuelType     FuelType   @relation(fields: [fuelTypeId], references: [id])
-  userId       Int // Usuário que registrou
-  user         User       @relation(fields: [userId], references: [id])
   createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-}
-
-model FuelType {
-  id        Int         @id @default(autoincrement())
-  name      String      @unique
-  createdBy Int
-  user      User        @relation(fields: [createdBy], references: [id])
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  FuelPrice FuelPrice[]
+  User         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  GasStation   GasStation @relation(fields: [gasStationId], references: [id])
 }

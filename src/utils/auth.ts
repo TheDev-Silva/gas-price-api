@@ -3,6 +3,10 @@ import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_TOKEN_WEB || '';
 
+if (!JWT_SECRET) {
+    throw new Error('JWT_SECRET is not configured');
+}
+
 export const authMiddleware = async (
     request: FastifyRequest,
     reply: FastifyReply
@@ -14,12 +18,15 @@ export const authMiddleware = async (
     }
 
     const token = authHeader.split(' ')[1];
+
     try {
         const decoded = jwt.verify(token, JWT_SECRET) as { id: number; email: string };
         request.user = decoded; // Adiciona os dados do usuário à requisição
         console.log('Usuário autenticado:', decoded); // Log para depuração
-    } catch (error) {
-        return reply.code(401).send({ error: 'Invalid or expired token' });
+    } catch (error: any) {
+        if (error.name === 'TokenExpiredError') {
+            return reply.code(401).send({ error: 'Token expired' });
+        }
+        return reply.code(401).send({ error: 'Invalid token' });
     }
 };
-

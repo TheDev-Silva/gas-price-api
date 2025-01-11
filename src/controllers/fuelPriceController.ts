@@ -1,13 +1,14 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import prisma from '../models/prismaClient';
 import jwt from 'jsonwebtoken';
+import { z } from 'zod';
 
 const Token = process.env.JWT_TOKEN_WEB;
 
 interface FuelPriceBody {
    gasStationName: string;
    address: string;
-   fuelType: string; // Nome do tipo de combustível
+   fuelType: string;
    price: number;
 }
 
@@ -15,91 +16,102 @@ export const addFuelPrice = async (
    request: FastifyRequest<{ Body: FuelPriceBody }>,
    reply: FastifyReply
 ) => {
+   const fuelPriceSchema = z.object({
+      gasStationName: z.string(),
+      address: z.string(),
+      fuelType: z.string(),
+      price: z.number(),
+   });
+
    try {
-      // Recupera o token JWT
-      const authHeader = request.headers.authorization;
-      if (!authHeader) {
-         return reply.code(401).send({ error: 'Unauthorized' });
+      // Validando os dados recebidos
+      const { gasStationName, address, fuelType, price } = fuelPriceSchema.parse(request.body);
+
+      // Verificando o token JWT para obter o ID do usuário
+      const token = request.headers.authorization?.split(' ')[1]; // Assume que o token está no cabeçalho 'Authorization'
+      if (!token) {
+         return reply.status(401).send({ error: 'Token de autenticação não encontrado.' });
       }
 
-      const token = authHeader.split(' ')[1];
-      const decoded = jwt.verify(token, Token!) as { id: number };
-
-      if (!decoded.id) {
-         return reply.code(401).send({ error: 'Token inválido ou expirado.' });
+      // Verificando e decodificando o token JWT
+      if (!Token) {
+         return reply.status(500).send({ error: 'Token de autenticação não configurado.' });
       }
 
-      const { gasStationName, address, fuelType, price } = request.body;
+      const decoded = jwt.verify(token, Token) as { id: number } | null;
 
-      if (!gasStationName || !address || !fuelType || !price) {
-         return reply.code(400).send({ error: 'Dados do posto incompletos.' });
+      if (!decoded || !decoded.id) {
+         return reply.status(401).send({ error: 'Token inválido ou usuário não autenticado.' });
       }
 
-      // Cria ou recupera o tipo de combustível
-      const fuelTypeRecord = await prisma.fuelType.upsert({
-         where: { name: fuelType },
-         update: {},
-         create: {
-            name: fuelType,
-            createdBy: decoded.id, // Associando o tipo ao usuário
-         },
+      const userId = decoded.id; // ID do usuário extraído do token
+
+
+      // Verificando se o usuário existe
+      const userExists = await prisma.user.findUnique({
+         where: { id: userId },
       });
+      console.log('EXISTENTE: ', userExists);
+      if (!userExists) {
+         return reply.status(404).send({ error: 'Usuário não encontrado.' });
+      }
 
-      // Cria ou recupera o posto de gasolina
-      const gasStation = await prisma.gasStation.upsert({
-         where: { name_address: { name: gasStationName, address } }, // Garantindo unicidade
-         update: {},
+      // Criação do posto de gasolina, se necessário
+      const gasStationRecord = await prisma.gasStation.upsert({
+         where: { name_address: { name: gasStationName, address: address } },
+         update: {}, // Não atualiza se já existir
          create: {
             name: gasStationName,
-            address,
+            address: address,
          },
       });
 
-      // Cadastra o preço do combustível associado ao usuário logado
+      // Criando o preço do combustível com o userId extraído do token
       const fuelPrice = await prisma.fuelPrice.create({
          data: {
-            gasStationId: gasStation.id,
-            fuelTypeId: fuelTypeRecord.id, // Associando ao tipo de combustível
-            price,
-            userId: decoded.id, // Usuário que registrou
+            fuelType: fuelType,
+            price: price,
+            address: address,
+            gasStationId: gasStationRecord.id, // Relacionando com o posto de gasolina
+            userId: userId, // Usando o ID do usuário extraído do token
          },
       });
 
-      reply.code(201).send(fuelPrice);
+      // Enviando a resposta ao cliente
+      reply.status(201).send(fuelPrice);
    } catch (error) {
       console.error(error);
-      reply.code(500).send({ error: 'Failed to add fuel price' });
+      reply.status(400).send({ error: 'Dados inválidos ou erro ao processar o preço do combustível.' });
    }
 };
 
-export const getFuelPrices = async (
-   request: FastifyRequest,
-   reply: FastifyReply
-) => {
+
+
+
+export const getFuelPrices = async (request: FastifyRequest, reply: FastifyReply) => {
    try {
       const { fuelType } = request.query as { fuelType?: string };
 
       const fuelPrices = await prisma.fuelPrice.findMany({
          where: {
             fuelType: {
-               name: {
-                  startsWith: fuelType,
-                  mode: 'insensitive',
-               },
+               startsWith: fuelType,
+               mode: 'insensitive',
             },
          },
          include: {
-            user: true,
-            gasStation: true,
-            fuelType: true, // Incluindo informações do tipo de combustível
+            GasStation: true,
+            User: true
+            //user: true, // Inclui as informações do usuário
+            //gasStation: true, // Inclui as informações do posto de gasolina
          },
       });
 
       reply.send(fuelPrices);
    } catch (error) {
-      console.error(error);
       reply.code(500).send({ error: 'Failed to fetch fuel prices' });
    }
 };
+
 
 
