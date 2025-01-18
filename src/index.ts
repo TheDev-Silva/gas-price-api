@@ -25,12 +25,12 @@ export default async (req: any, res: any) => {
   }
 };
 if (require.main === module) {
-  app.listen({ port: 3000, host: '0.0.0.0' }, (err, address) => {
+  app.listen({ port: 3000, host: '0.0.0.0' }, (err) => {
     if (err) {
       console.error(err);
       process.exit(1);
     }
-    console.log(`Server running at ${address}`);
+    console.log(`Server running at http://192.168.0.13:3000`);
   });
 }
 /* app.listen({ port: 3000, host: '0.0.0.0' }, (err) => {
