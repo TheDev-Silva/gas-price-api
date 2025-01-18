@@ -6,6 +6,9 @@ import userRoutes from './routes/userRoutes';
 const app = fastify();
 
 // Registra as rotas
+app.get('/', (req, reply) => {
+  reply.send({ message: 'API funcionando!' });
+});
 app.register(fuelPriceRoutes);
 app.register(gasStationRoutes);
 app.register(userRoutes);
