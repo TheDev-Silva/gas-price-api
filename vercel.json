@@ -1,13 +1,11 @@
 {
-    "version": 2,
-    "builds": [
-      {
-        "src": "package.json",
-        "use": "@vercel/static-build",
-        "buildCommand": "npm run build"
-      }
-    ],
-    "routes": [
-      { "src": "/(.*)", "dest": "/dist/index.js" }
-    ]
-  }
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "buildCommand": "npm run build"
+    }
+  ],
+  "routes": [{ "src": "/(.*)", "dest": "/dist/index.js" }]
+}

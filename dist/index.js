@@ -20,7 +20,13 @@ app.register(gasStationRoutes_1.default); // Registra as rotas
   console.log(`Server running at http://192.168.0.13:3000`);
 }); */
 exports.default = async (req, res) => {
-    await app.ready();
-    app.server.emit('request', req, res);
-    console.log('dados', res);
+    try {
+        await app.ready();
+        app.server.emit('request', req, res);
+        console.log('Request handled');
+    }
+    catch (err) {
+        console.error('Error handling request:', err);
+        res.send({ error: 'Internal Server Error' });
+    }
 };
