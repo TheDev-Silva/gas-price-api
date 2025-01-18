@@ -2,25 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "src/index.ts",
-      "use": "@vercel/node",
-      "config": {
-        "maxDuration": 10
-      }
+      "src": "api/index.ts",
+      "use": "@vercel/node"
     }
   ],
-  "build": {
-    "env": {
-      "PRISMA_GENERATE": "true"
-    },
-    "commands": [
-      "npx prisma generate"
-    ]
-  },
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "src/index.ts"
+      "dest": "api/index.ts"
     }
   ]
 }
