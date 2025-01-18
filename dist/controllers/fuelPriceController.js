@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -8,7 +17,8 @@ const prismaClient_1 = __importDefault(require("../models/prismaClient"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const zod_1 = require("zod");
 const Token = process.env.JWT_TOKEN_WEB;
-const addFuelPrice = async (request, reply) => {
+const addFuelPrice = (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     const fuelPriceSchema = zod_1.z.object({
         gasStationName: zod_1.z.string(),
         address: zod_1.z.string(),
@@ -19,7 +29,7 @@ const addFuelPrice = async (request, reply) => {
         // Validando os dados recebidos
         const { gasStationName, address, fuelType, price } = fuelPriceSchema.parse(request.body);
         // Verificando o token JWT para obter o ID do usuário
-        const token = request.headers.authorization?.split(' ')[1]; // Assume que o token está no cabeçalho 'Authorization'
+        const token = (_a = request.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1]; // Assume que o token está no cabeçalho 'Authorization'
         if (!token) {
             return reply.status(401).send({ error: 'Token de autenticação não encontrado.' });
         }
@@ -33,7 +43,7 @@ const addFuelPrice = async (request, reply) => {
         }
         const userId = decoded.id; // ID do usuário extraído do token
         // Verificando se o usuário existe
-        const userExists = await prismaClient_1.default.user.findUnique({
+        const userExists = yield prismaClient_1.default.user.findUnique({
             where: { id: userId },
         });
         console.log('EXISTENTE: ', userExists);
@@ -41,7 +51,7 @@ const addFuelPrice = async (request, reply) => {
             return reply.status(404).send({ error: 'Usuário não encontrado.' });
         }
         // Criação do posto de gasolina, se necessário
-        const gasStationRecord = await prismaClient_1.default.gasStation.upsert({
+        const gasStationRecord = yield prismaClient_1.default.gasStation.upsert({
             where: { name_address: { name: gasStationName, address: address } },
             update: {}, // Não atualiza se já existir
             create: {
@@ -50,7 +60,7 @@ const addFuelPrice = async (request, reply) => {
             },
         });
         // Criando o preço do combustível com o userId extraído do token
-        const fuelPrice = await prismaClient_1.default.fuelPrice.create({
+        const fuelPrice = yield prismaClient_1.default.fuelPrice.create({
             data: {
                 fuelType: fuelType,
                 price: price,
@@ -66,12 +76,12 @@ const addFuelPrice = async (request, reply) => {
         console.error(error);
         reply.status(400).send({ error: 'Dados inválidos ou erro ao processar o preço do combustível.' });
     }
-};
+});
 exports.addFuelPrice = addFuelPrice;
-const getFuelPrices = async (request, reply) => {
+const getFuelPrices = (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { fuelType } = request.query;
-        const fuelPrices = await prismaClient_1.default.fuelPrice.findMany({
+        const fuelPrices = yield prismaClient_1.default.fuelPrice.findMany({
             where: {
                 fuelType: {
                     startsWith: fuelType,
@@ -90,5 +100,5 @@ const getFuelPrices = async (request, reply) => {
     catch (error) {
         reply.code(500).send({ error: 'Failed to fetch fuel prices' });
     }
-};
+});
 exports.getFuelPrices = getFuelPrices;
