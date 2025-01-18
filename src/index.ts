@@ -20,12 +20,7 @@ app.register(gasStationRoutes); // Registra as rotas
 }); */
 
 export default async (req: any, res: any) => {
-  try {
-    await app.ready();
-    app.server.emit('request', req, res);
-    console.log('Request handled');
-  } catch (err) {
-    console.error('Error handling request:', err);
-    res.send({ error: 'Internal Server Error' });
-  }
-};
+  await app.ready()
+  app.server.emit('request', req, res)
+  console.log('dados',res)
+}
