@@ -16,20 +16,39 @@ const fastify_1 = __importDefault(require("fastify"));
 const fuelPriceRoutes_1 = __importDefault(require("./routes/fuelPriceRoutes"));
 const gasStationRoutes_1 = __importDefault(require("./routes/gasStationRoutes"));
 const userRoutes_1 = __importDefault(require("./routes/userRoutes"));
-/* require('dotenv').config() */
 const app = (0, fastify_1.default)();
-app.register(fuelPriceRoutes_1.default); // Registra as rotas
-app.register(userRoutes_1.default); // Registra as rotas
-app.register(gasStationRoutes_1.default); // Registra as rotas
+// Registra as rotas
+app.register(fuelPriceRoutes_1.default);
+app.register(gasStationRoutes_1.default);
+app.register(userRoutes_1.default);
+// Exporta como uma função que Vercel pode entender
+exports.default = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // Certifica-se de que o Fastify está pronto para processar as requisições
+        yield app.ready();
+        // Encaminha a requisição para o servidor Fastify
+        app.server.emit('request', req, res);
+    }
+    catch (err) {
+        // Em caso de erro, envia uma resposta diretamente
+        res.statusCode = 500;
+        res.end('Internal Server Error');
+        console.error(err);
+    }
+});
+if (require.main === module) {
+    app.listen({ port: 3000, host: '0.0.0.0' }, (err, address) => {
+        if (err) {
+            console.error(err);
+            process.exit(1);
+        }
+        console.log(`Server running at ${address}`);
+    });
+}
 /* app.listen({ port: 3000, host: '0.0.0.0' }, (err) => {
   if (err) {
     console.log(err);
     process.exit(1);
   }
   console.log(`Server running at http://192.168.0.13:3000`);
-}); */
-exports.default = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    yield app.ready();
-    app.server.emit('request', req, res);
-    console.log('dados', res);
-});
+}); */ 
