@@ -5,7 +5,7 @@
       "src": "src/index.ts",
       "use": "@vercel/node",
       "config": {
-        "includeFiles": ["prisma/schema.prisma"]
+        "includeFiles": ["prisma/schema.prisma", "prisma/**"]
       }
     }
   ],
@@ -14,8 +14,5 @@
       "src": "/(.*)",
       "dest": "src/index.ts"
     }
-  ],
-  "hooks": {
-    "build": "prisma generate"
-  }
+  ]
 }
