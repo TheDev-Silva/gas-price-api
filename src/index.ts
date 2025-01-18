@@ -18,3 +18,8 @@ app.listen({ port: 3000, host: '0.0.0.0' }, (err) => {
   }
   console.log(`Server running at http://192.168.0.13:3000`);
 });
+
+/* export default async (req: any, res: any) => {
+  await app.ready()
+  app.server.emit('request', req, res)
+} */
