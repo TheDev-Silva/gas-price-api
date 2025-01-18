@@ -1,16 +1,38 @@
 import fastify from 'fastify';
 import fuelPriceRoutes from './routes/fuelPriceRoutes';
-
 import gasStationRoutes from './routes/gasStationRoutes';
 import userRoutes from './routes/userRoutes';
-/* require('dotenv').config() */
 
 const app = fastify();
 
-app.register(fuelPriceRoutes); // Registra as rotas
-app.register(userRoutes); // Registra as rotas
-app.register(gasStationRoutes); // Registra as rotas
+// Registra as rotas
+app.register(fuelPriceRoutes);
+app.register(gasStationRoutes);
+app.register(userRoutes);
 
+// Exporta como uma função que Vercel pode entender
+export default async (req: any, res: any) => {
+  try {
+    // Certifica-se de que o Fastify está pronto para processar as requisições
+    await app.ready();
+    // Encaminha a requisição para o servidor Fastify
+    app.server.emit('request', req, res);
+  } catch (err) {
+    // Em caso de erro, envia uma resposta diretamente
+    res.statusCode = 500;
+    res.end('Internal Server Error');
+    console.error(err);
+  }
+};
+if (require.main === module) {
+  app.listen({ port: 3000, host: '0.0.0.0' }, (err, address) => {
+    if (err) {
+      console.error(err);
+      process.exit(1);
+    }
+    console.log(`Server running at ${address}`);
+  });
+}
 /* app.listen({ port: 3000, host: '0.0.0.0' }, (err) => {
   if (err) {
     console.log(err);
@@ -18,9 +40,3 @@ app.register(gasStationRoutes); // Registra as rotas
   }
   console.log(`Server running at http://192.168.0.13:3000`);
 }); */
-
-export default async (req: any, res: any) => {
-  await app.ready()
-  app.server.emit('request', req, res)
-  console.log('dados',res)
-}
