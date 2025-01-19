@@ -5,6 +5,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
 const Token = process.env.JWT_TOKEN_WEB
+console.log(Token)
 
 export const registerUser = async (
    request: FastifyRequest<{ Body: CreateUserInput }>,
