@@ -23,12 +23,12 @@ export const authMiddleware = async (
     try {
         const decoded = jwt.verify(token, JWT_SECRET) as { id: number; email: string };
         request.user = decoded; // Adiciona os dados do usuário à requisição
-        console.log('Usuário autenticado:', token); // Log para depuração
+        //console.log('Usuário autenticado:', token); // Log para depuração
     } catch (error: any) {
         if (error.name === 'TokenExpiredError') {
             return reply.code(401).send({ error: 'Token expired' });
         }
-        console.error('Erro ao validar token:', error); // Log detalhado do erro
+        //console.error('Erro ao validar token:', error); // Log detalhado do erro
         return reply.code(401).send({ error: 'Invalid token' });
     }
 };
