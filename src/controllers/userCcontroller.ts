@@ -58,7 +58,7 @@ export const loginUser = async (
 
       // Gera um token JWT
       const token = jwt.sign({ id: user.id }, `${Token}`, { expiresIn: '1h' });
-
+      console.log('Token assinado com chave:', Token); // Adicione esse log
       const authenticatedUser: AuthenticatedUser = {
          id: user.id,
          name: user.name,
