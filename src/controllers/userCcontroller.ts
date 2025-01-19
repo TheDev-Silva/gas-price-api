@@ -7,6 +7,37 @@ import jwt from 'jsonwebtoken';
 const Token = process.env.JWT_TOKEN_WEB
 console.log(Token)
 
+export const renewToken = async (
+   request: FastifyRequest<{ Body: { email: string; password: string } }>,
+   reply: FastifyReply
+) => {
+   try {
+      const { email, password } = request.body;
+
+      // Busca o usuário pelo email
+      const user = await prisma.user.findUnique({ where: { email } });
+
+      if (!user) {
+         return reply.code(404).send({ error: 'Usuário não encontrado.' });
+      }
+
+      // Valida a senha
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+      if (!isPasswordValid) {
+         return reply.code(401).send({ error: 'Senha inválida.' });
+      }
+
+      // Gera um novo token JWT
+      const newToken = jwt.sign({ id: user.id }, `${Token}`, { expiresIn: '1h' });
+
+      return reply.code(200).send({ message: 'Token renovado com sucesso.', token: newToken });
+   } catch (error) {
+      console.error('Erro ao renovar token:', error);
+      reply.code(500).send({ error: 'Erro interno ao renovar token.' });
+   }
+};
+
+
 export const registerUser = async (
    request: FastifyRequest<{ Body: CreateUserInput }>,
    reply: FastifyReply

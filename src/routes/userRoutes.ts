@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { registerUser, loginUser, getRegisterUser, deleteUser } from '../controllers/userCcontroller';
+import { registerUser, loginUser, getRegisterUser, deleteUser, renewToken } from '../controllers/userCcontroller';
 import { authMiddleware } from '../utils/auth';
 
 const userRoutes = async (fastify: FastifyInstance) => {
@@ -7,6 +7,7 @@ const userRoutes = async (fastify: FastifyInstance) => {
   fastify.get('/register-userId', { preHandler: authMiddleware }, getRegisterUser);
   fastify.post('/login', loginUser);
   fastify.delete('/delete-userId', deleteUser);
+  fastify.post('/renewToken', renewToken)
 
 };
 
