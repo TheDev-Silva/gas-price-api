@@ -8,7 +8,7 @@ const userRoutes = async (fastify: FastifyInstance) => {
   fastify.post('/login', loginUser);
   fastify.delete('/delete-userId', deleteUser);
   fastify.post('/renewToken', renewToken)
-  fastify.post('/validateToken', validateToken)
+  fastify.post('/validate-token', validateToken)
 
 };
 
