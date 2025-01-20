@@ -7,6 +7,12 @@ import jwt from 'jsonwebtoken';
 const Token = process.env.JWT_TOKEN_WEB
 console.log(Token)
 
+const JWT_SECRET = process.env.JWT_TOKEN_WEB || '';
+
+if (!JWT_SECRET) {
+   throw new Error('JWT_SECRET não está configurado!');
+}
+
 export const renewToken = async (
    request: FastifyRequest<{ Body: { email: string; password: string } }>,
    reply: FastifyReply
@@ -36,6 +42,35 @@ export const renewToken = async (
       reply.code(500).send({ error: 'Erro interno ao renovar token.' });
    }
 };
+
+
+export const validateToken = async (
+   request: FastifyRequest<{ Body: { token: string } }>,
+   reply: FastifyReply
+) => {
+   try {
+      const { token } = request.body;
+
+      if (!token) {
+         return reply.code(400).send({ error: 'Token não fornecido.' });
+      }
+
+      // Verifica e decodifica o token JWT
+      try {
+         const decoded = jwt.verify(token, JWT_SECRET);
+         return reply.code(200).send({ valid: true, message: 'Token válido.', decoded });
+      } catch (error: any) {
+         if (error.name === 'TokenExpiredError') {
+            return reply.code(401).send({ valid: false, error: 'Token expirado.' });
+         }
+         return reply.code(401).send({ valid: false, error: 'Token inválido.' });
+      }
+   } catch (error) {
+      console.error('Erro ao validar token:', error);
+      reply.code(500).send({ error: 'Erro interno ao validar token.' });
+   }
+};
+
 
 
 export const registerUser = async (
